@@ -8,27 +8,30 @@ public class Mesa {
     private TipoJogo tipoJogo;
     private Baralho baralho;
     private int jogadorAtual;
-    private int rodadaAtual;
-    private List<Carta> cartasJogadas;
-    private List<Jogador> ordemCartasJogadas; // Para saber quem jogou cada carta
     private boolean jogoIniciado;
-    private int pontosRodada; // 1, 3, 6, 9, 12 (normal, truco, 6, 9, 12)
+    private int rodadaAtual;
+    private int pontosRodada;
+    private List<Carta> cartasJogadas;
+    private List<Jogador> ordemCartasJogadas;
 
     public Mesa(TipoJogo tipoJogo) {
         this.tipoJogo = tipoJogo;
         this.jogadores = new ArrayList<>();
         this.baralho = new Baralho();
         this.jogadorAtual = 0;
+        this.jogoIniciado = false;
         this.rodadaAtual = 1;
+        this.pontosRodada = 1;
         this.cartasJogadas = new ArrayList<>();
         this.ordemCartasJogadas = new ArrayList<>();
-        this.jogoIniciado = false;
-        this.pontosRodada = 1;
     }
 
     public void adicionarJogador(Jogador jogador) {
         if (jogadores.size() >= tipoJogo.getNumeroJogadores()) {
             throw new RuntimeException("Mesa já está completa!");
+        }
+        if (jogador == null) {
+            throw new IllegalArgumentException("Jogador não pode ser nulo!");
         }
         jogadores.add(jogador);
     }
@@ -39,64 +42,22 @@ public class Mesa {
         }
 
         for (Jogador jogador : jogadores) {
+            jogador.limparMao();
             jogador.receberCartas(baralho.distribuirCartas(3));
         }
 
         jogoIniciado = true;
     }
 
-    public void jogarCarta(int indiceCarta) {
-        if (!jogoIniciado) {
-            throw new RuntimeException("Jogo ainda não foi iniciado!");
-        }
-
-        Jogador jogador = jogadores.get(jogadorAtual);
-        Carta cartaJogada = jogador.jogarCarta(indiceCarta);
-
-        cartasJogadas.add(cartaJogada);
-        ordemCartasJogadas.add(jogador);
-
-        proximoJogador();
-
-        if (cartasJogadas.size() == tipoJogo.getNumeroJogadores()) {
-            avaliarRodada();
-        }
-    }
-
-    private void avaliarRodada() {
-        Carta cartaMaisForte = cartasJogadas.get(0);
-        int indiceVencedor = 0;
-
-        for (int i = 1; i < cartasJogadas.size(); i++) {
-            if (cartasJogadas.get(i).ehMaisFortQue(cartaMaisForte)) {
-                cartaMaisForte = cartasJogadas.get(i);
-                indiceVencedor = i;
-            }
-        }
-
-        Jogador vencedorRodada = ordemCartasJogadas.get(indiceVencedor);
-        System.out.println("Rodada " + rodadaAtual + " vencida por: " + vencedorRodada.getNome());
-
-        cartasJogadas.clear();
-        ordemCartasJogadas.clear();
-        rodadaAtual++;
-
-        jogadorAtual = jogadores.indexOf(vencedorRodada);
-    }
-
-    private void proximoJogador() {
+    public void proximoJogador() {
         jogadorAtual = (jogadorAtual + 1) % tipoJogo.getNumeroJogadores();
     }
 
-    public boolean partidaAcabou() {
-        return jogadores.stream().anyMatch(j -> j.getPontos() >= 12);
-    }
-
-    public Jogador getVencedor() {
-        return jogadores.stream()
-                .filter(j -> j.getPontos() >= 12)
-                .findFirst()
-                .orElse(null);
+    public void setJogadorAtual(Jogador jogador) {
+        int indice = jogadores.indexOf(jogador);
+        if (indice >= 0) {
+            jogadorAtual = indice;
+        }
     }
 
     public void novaMao() {
@@ -113,31 +74,70 @@ public class Mesa {
         iniciarJogo();
     }
 
+    public boolean estaPronta() {
+        return jogadores.size() == tipoJogo.getNumeroJogadores() && jogoIniciado;
+    }
+
+    public boolean partidaAcabou() {
+        return jogadores.stream().anyMatch(j -> j.getPontos() >= 12);
+    }
+
+    public Jogador getVencedor() {
+        return jogadores.stream()
+                .filter(j -> j.getPontos() >= 12)
+                .findFirst()
+                .orElse(null);
+    }
+
     public List<Jogador> getJogadores() {
         return new ArrayList<>(jogadores);
     }
 
     public Jogador getJogadorAtual() {
+        if (jogadores.isEmpty()) {
+            return null;
+        }
         return jogadores.get(jogadorAtual);
     }
 
-    public int getRodadaAtual() {
-        return rodadaAtual;
+    public int getIndiceJogadorAtual() {
+        return jogadorAtual;
     }
 
-    public List<Carta> getCartasJogadas() {
-        return new ArrayList<>(cartasJogadas);
+    public TipoJogo getTipoJogo() {
+        return tipoJogo;
     }
 
     public boolean isJogoIniciado() {
         return jogoIniciado;
     }
 
+    public Baralho getBaralho() {
+        return baralho;
+    }
+
+    public int getRodadaAtual() {
+        return rodadaAtual;
+    }
+
     public int getPontosRodada() {
         return pontosRodada;
     }
 
-    public TipoJogo getTipoJogo() {
-        return tipoJogo;
+    public List<Carta> getCartasJogadas() {
+        return new ArrayList<>(cartasJogadas);
+    }
+
+    public List<Jogador> getOrdemCartasJogadas() {
+        return new ArrayList<>(ordemCartasJogadas);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Mesa %s - %d/%d jogadores - %s",
+                tipoJogo.getDescricao(),
+                jogadores.size(),
+                tipoJogo.getNumeroJogadores(),
+                jogoIniciado ? "Jogo iniciado" : "Aguardando");
     }
 }

@@ -1,11 +1,11 @@
 package Model;
 
 import Util.Naipe;
+import Util.ValorCarta;
 import java.util.*;
 
 public class Baralho {
     private List<Carta> cartas;
-    private final String[] valores = {"4", "5", "6", "7", "Q", "J", "K", "A", "2", "3"};
 
     public Baralho() {
         criarBaralho();
@@ -16,7 +16,7 @@ public class Baralho {
         cartas = new ArrayList<>();
 
         for (Naipe naipe : Naipe.values()) {
-            for (String valor : valores) {
+            for (ValorCarta valor : ValorCarta.values()) {
                 cartas.add(new Carta(valor, naipe));
             }
         }

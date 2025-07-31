@@ -1,43 +1,27 @@
 package Model;
 
 import Util.Naipe;
+import Util.ValorCarta;
 
 public class Carta {
-    private final String valor;
+    private final ValorCarta valor;
     private final Naipe naipe;
-    private final int forca; // Força da carta na hierarquia do truco
 
-    public Carta(String valor, Naipe naipe) {
+    public Carta(ValorCarta valor, Naipe naipe) {
         this.valor = valor;
         this.naipe = naipe;
-        this.forca = calcularForca(valor);
     }
 
-    private int calcularForca(String valor) {
-        switch (valor) {
-            case "4": return 1;
-            case "5": return 2;
-            case "6": return 3;
-            case "7": return 4;
-            case "Q": return 5;
-            case "J": return 6;
-            case "K": return 7;
-            case "A": return 8;
-            case "2": return 9;
-            case "3": return 10;
-            default: return 0;
-        }
-    }
 
     public boolean ehMaisFortQue(Carta outraCarta) {
-        return this.forca > outraCarta.forca;
+        return this.valor.ehMaisFortQue(outraCarta.valor);
     }
 
     public boolean mesmaForca(Carta outraCarta) {
-        return this.forca == outraCarta.forca;
+        return this.valor.mesmaForca(outraCarta.valor);
     }
 
-    public String getValor() {
+    public ValorCarta getValor() {
         return valor;
     }
 
@@ -46,12 +30,12 @@ public class Carta {
     }
 
     public int getForca() {
-        return forca;
+        return valor.getForca();
     }
 
     @Override
     public String toString() {
-        return valor + naipe.getSimbolo();
+        return valor.getSimbolo() + naipe.getSimbolo();
     }
 
     @Override
@@ -59,7 +43,7 @@ public class Carta {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Carta carta = (Carta) obj;
-        return valor.equals(carta.valor) && naipe == carta.naipe;
+        return valor == carta.valor && naipe == carta.naipe;
     }
 
     @Override
